@@ -9,7 +9,7 @@ from skimage import io
 #paths for accessing resources
 predictor_path = "./res/shape_predictor_5_face_landmarks.dat"
 face_rec_model_path = "./res/dlib_face_recognition_resnet_model_v1.dat"
-setup_folder_path = "./users/doug"
+setup_folder_path = "./users"
 
 # Load all the models we need: a detector to find the faces, a shape predictor
 # to find face landmarks so we can precisely localize the face, and finally the
@@ -18,10 +18,14 @@ detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
-def setup():
+##
+# Sets up new user profile
+##
+def setup_user():
     file_num = 0
+    print(user_option.get().lower())
     # Now process all the images
-    for f in glob.glob(os.path.join(setup_folder_path + "/pics", "*.jpg")):
+    for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics".format(user_option.get().lower()), "*.jpg")):
         print("Processing file: {}".format(f))
         img = io.imread(f)
 
@@ -41,8 +45,9 @@ def setup():
                 #get face descriptor and save points to the file
                 face_descriptor = facerec.compute_face_descriptor(img, shape)
                 print(file_num)
-                save_image_landmarks(setup_folder_path + "/doug{}".format(file_num), face_descriptor)
+                save_image_landmarks(setup_folder_path + "/{}/{}{}".format(user_option.get().lower(), user_option.get().lower(), file_num), face_descriptor)
                 file_num+=1
+
 ##
 # Saves face descriptor points to a file
 ##
@@ -135,6 +140,8 @@ def recog():
 def lock():
     os.popen('gnome-screensaver-command --lock')
 
+
+
 root = Tk()
 
 toolbar = Frame(root)
@@ -145,8 +152,15 @@ a.pack(padx = 3, pady = 10)
 b = Button(toolbar, text="popup window", width = 40, command=recog)
 b.pack(padx = 3, pady = 10)
 
-c = Button(toolbar, text="setup", width = 40, command=setup)
+c = Button(toolbar, text="setup", width = 40, command=setup_user)
 c.pack(padx = 3, pady = 10)
+
+user_list = ["Doug", "Patrick"]
+
+user_option = StringVar(toolbar)
+user_option.set(user_list[0]) # default value
+w = OptionMenu(toolbar, user_option , *user_list)
+w.pack()
 
 toolbar.pack(side=TOP, fill=X)
 
