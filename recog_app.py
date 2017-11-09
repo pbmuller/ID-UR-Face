@@ -3,6 +3,7 @@ import os
 import dlib
 import glob
 import math
+import time
 from Tkinter import *
 from skimage import io
 
@@ -18,8 +19,13 @@ detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
+current_loaded_user = "";
+faces = [];
+
+run = False
+
 ##
-# Sets up new user profile
+# TODO: Sets up new user profile
 ##
 def setup_user():
     file_num = 0
@@ -67,8 +73,8 @@ def get_image_landmarks(path):
     otherpoints = []
     for str in points:
         otherpoints.append(float(str.rstrip("\n")))
-    print otherpoints
     file.close()
+    return otherpoints
 
 ##
 # Calculates the distance between two face descriptors
@@ -79,14 +85,13 @@ def calc_distance(check, reference):
     for x in face_descriptor:
         sum_of_dif_sq += (x - prev[i])*(x - prev[i])
         i+=1
+    return math.sqrt(sum_of_diff_sq)
 
 ##
 # Does Facial recognition things
 ##
 def recog():
     win = dlib.image_window()
-
-    prev = -1
 
     # Now process all the images
     for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
@@ -102,37 +107,28 @@ def recog():
         dets = detector(img, 1)
         print("Number of faces detected: {}".format(len(dets)))
         
-        # Now process each face we found.
-        for k, d in enumerate(dets):
-            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-                k, d.left(), d.top(), d.right(), d.bottom()))
-            # Get the landmarks/parts for the face in box d.
-            shape = sp(img, d)
-            # Draw the face landmarks on the screen so we can see what face is currently being processed.
-            win.clear_overlay()
-            win.add_overlay(d)
-            win.add_overlay(shape)
+       	if len(dets) < 1:
+       		print("There are no faces in this")
+       	elif len(dets) == 1:
+	        for k, d in enumerate(dets):
+	            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
+	                k, d.left(), d.top(), d.right(), d.bottom()))
+	            # Get the landmarks/parts for the face in box d.
+	            shape = sp(img, d)
+	            # Draw the face landmarks on the screen so we can see what face is currently being processed.
+	            win.clear_overlay()
+	            win.add_overlay(d)
+	            win.add_overlay(shape)
 
-            #Calculate the 
-            if prev != -1:
-                face_descriptor = facerec.compute_face_descriptor(img, shape)
+	            face_descriptor = facerec.compute_face_descriptor(img, shape)
 
-                sum_of_dif_sq = 0
+	            calc_distance();
+	            
+	            print(total)
+		else:
+			lock()
 
-                i = 0
-                for x in face_descriptor:
-                    sum_of_dif_sq += (x - prev[i])*(x - prev[i])
-                    i+=1
-
-                total = math.sqrt(sum_of_dif_sq)
-                
-                print(total)
-            else:
-                print("First face")
-                prev = facerec.compute_face_descriptor(img, shape)
-
-
-            dlib.hit_enter_to_continue()
+        dlib.hit_enter_to_continue()
 
 ##
 # Locks the Operating System
@@ -140,7 +136,15 @@ def recog():
 def lock():
     os.popen('gnome-screensaver-command --lock')
 
+def start_timer():
+	run = True
+	while run:
+		time.sleep(10)
+		print("hey")
+	print("timer ended")
 
+def stop_timer():
+	run = false;
 
 root = Tk()
 
@@ -154,6 +158,12 @@ b.pack(padx = 3, pady = 10)
 
 c = Button(toolbar, text="setup", width = 40, command=setup_user)
 c.pack(padx = 3, pady = 10)
+
+d = Button(toolbar, text="start", width = 40, command=start_timer)
+d.pack(padx = 3, pady = 10)
+
+e = Button(toolbar, text="stop", width = 40, command=stop_timer)
+e.pack(padx = 3, pady = 10)
 
 user_list = ["Doug", "Patrick"]
 
