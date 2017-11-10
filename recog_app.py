@@ -127,9 +127,6 @@ def recog():
 	            print(total)
 		else:
 			lock()
-
-        dlib.hit_enter_to_continue()
-
 ##
 # Locks the Operating System
 ##
