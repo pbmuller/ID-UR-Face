@@ -4,11 +4,13 @@ import dlib
 import glob
 import math
 import time
-from Tkinter import *
+import ctypes
+from cv2 import *
+from tkinter import *
 from skimage import io
 
 #paths for accessing resources
-predictor_path = "./res/shape_predictor_5_face_landmarks.dat"
+predictor_path = "./res/shape_predictor_68_face_landmarks.dat"
 face_rec_model_path = "./res/dlib_face_recognition_resnet_model_v1.dat"
 setup_folder_path = "./users"
 
@@ -48,7 +50,7 @@ class MonitorFace(Frame):
         self._elapsedtime = time.time() - self._start
         self._timer = self.after(1000, self._update)
         self.time_since_last_update += 1
-        if self.time_since_last_update >= 5:
+        if self.time_since_last_update >= 10:
             self.recog()
             print(len(self.loaded_faces))
             self.time_since_last_update = 0
@@ -92,7 +94,7 @@ class MonitorFace(Frame):
     # Locks the Operating System
     ##
     def lock(self):
-        os.popen('gnome-screensaver-command --lock')
+        ctypes.windll.user32.LockWorkStation()
 
     ##
     # Calculates the distance between two face descriptors
@@ -105,12 +107,19 @@ class MonitorFace(Frame):
             i+=1
         return math.sqrt(sum_of_diff_sq)
 
+    def take_photo(self):
+        cam = VideoCapture(0)   # 0 -> index of camera
+        s, img = cam.read()
+        if s:    # frame captured without any errors
+            imwrite("filename.jpg",img) #save image    
+
     ##
     # Does Facial recognition things
     ##
     def recog(self):
+        self.take_photo()
         # Now process all the images
-        img = io.imread("./faces/pratt.jpg")
+        img = io.imread("filename.jpg")
         for f in self.loaded_faces:
             # Ask the detector to find the bounding boxes of each face. The 1 in the
             # second argument indicates that we should upsample the image 1 time. This
@@ -120,6 +129,8 @@ class MonitorFace(Frame):
             
             if len(dets) < 1:
                 print("There are no faces in this")
+                self.lock()
+                self.Stop()
             elif len(dets) == 1:
                 for k, d in enumerate(dets):
                     print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
@@ -131,7 +142,8 @@ class MonitorFace(Frame):
                     distance = self.calc_distance(face_descriptor, f);
                     print(distance)
             else:
-                lock() 
+                self.lock()
+                self.Stop() 
 
 def main():
     root = Tk()

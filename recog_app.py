@@ -4,7 +4,7 @@ import dlib
 import glob
 import math
 import time
-from Tkinter import *
+from tkinter import *
 from skimage import io
 
 #paths for accessing resources
@@ -125,8 +125,8 @@ def recog():
 	            calc_distance();
 	            
 	            print(total)
-		else:
-			lock()
+        else:
+            lock()
 ##
 # Locks the Operating System
 ##
