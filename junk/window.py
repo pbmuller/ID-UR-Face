@@ -1,5 +1,8 @@
 import os
-from Tkinter import *
+try:
+	from Tkinter import *
+except:
+	from tkinter import *
 
 root = Tk()
 
