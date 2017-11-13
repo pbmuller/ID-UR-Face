@@ -4,16 +4,22 @@ import dlib
 import glob
 import math
 import time
-
 import ctypes
 from cv2 import *
 from tkinter import *
-from skimage import io
+# from skimage import io
+from scipy.misc import imread
+from utility import proper_slash
+
+#get proper slash for file path based off os
+ps = proper_slash()
 
 #paths for accessing resources
-predictor_path = "./res/shape_predictor_68_face_landmarks.dat"
-face_rec_model_path = "./res/dlib_face_recognition_resnet_model_v1.dat"
-setup_folder_path = "./users"
+predictor_path = ".{}res{}shape_predictor_68_face_landmarks.dat".format(ps, ps)
+face_rec_model_path = ".{}res{}dlib_face_recognition_resnet_model_v1.dat".format(ps, ps)
+setup_folder_path = ".{}users".format(ps)
+
+print("able to set paths\n")
 
 # Load all the models we need: a detector to find the faces, a shape predictor
 # to find face landmarks so we can precisely localize the face, and finally the
@@ -22,10 +28,14 @@ detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
+print("able to load models")
+
 num_reference = 5
 saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
+
+print("able to access camera")
 
 user_list = ["Doug", "Patrick"]
 
@@ -42,7 +52,7 @@ def create_new_user():
     Button(win, text="Create User", command=lambda:checkUsername(user_name.get(), win)).pack()
 
 def checkUsername(name, win):
-    if os.path.isfile("./users/{}/{}4".format(name,name)):
+    if os.path.isfile(".{}users{}{}{}{}4".format(ps, ps, name, ps, name)):
         Label(win, text="There is already a user with this name").pack()
     else:
         user_list.append(name)
@@ -56,11 +66,11 @@ def reference_img(name, index):
         imshow("Face-Reference-{}".format(index),img)
         waitKey(0)
         destroyWindow("Face-Reference-{}".format(index))
-        imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
+        imwrite(".{}users{}{}{}pics{}{}.jpg".format(ps, ps, name, ps, ps, index),img) #save image
 
 def create_reference_faces(name):
-    os.makedirs("./users/{}".format(name))
-    os.makedirs("./users/{}/pics".format(name))
+    os.makedirs(".{}users{}{}".format(ps, ps, name))
+    os.makedirs(".{}users{}{}{}pics".format(ps, ps, name, ps))
     saved_photos = 0
     if saved_photos < 5:
         print("here : " + str(saved_photos))
@@ -86,9 +96,9 @@ def new_img_prompt(conf, name, index):
     use_img_prompt(name, index)
 
 def create_map_file(name, index):
-    new_file = open("./users/{}/{}{}".format(name, name, index), 'w')
+    new_file = open(".{}users{}{}{}{}{}".format(ps, ps, name, ps, name, index), 'w')
     
-    img = io.imread("./users/{}/pics/{}.jpg".format(name, index))
+    img = imread(".{}users{}{}{}pics{}{}.jpg".format(ps, ps, name, ps, ps, index))
     dets = detector(img, 1)
     for k, d in enumerate(dets):
         print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
@@ -151,7 +161,7 @@ class MonitorFace(Frame):
             self.after_cancel(self._timer)            
             self._elapsedtime = 0
             self._running = 0
-            if os.path.isfile('./verify.jpg'):
+            if os.path.isfile('.{}verify.jpg'.format(ps)):
                 os.remove("verify.jpg")
 
     def take_photo(self):
@@ -175,15 +185,22 @@ class MonitorFace(Frame):
         file_num = 0
         self.current_user = self.user_option.get()
         self.loaded_faces = []
-        for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics".format(self.user_option.get(), "*.jpg"))):
+        for f in glob.glob(os.path.join(setup_folder_path + "{}{}{}pics".format(ps, self.user_option.get(), ps, "*.jpg"))):
             print("Processing file: {}".format(f))
-            self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
+            self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "{}{}{}{}{}".format(ps, self.user_option.get(), ps, self.user_option.get(), file_num)))
 
     ##
     # Locks the Operating System
     ##
     def lock(self):
-        ctypes.windll.user32.LockWorkStation()
+        # I don't think that this will actually lock a computer, unless it is windows OS
+        if os.name == 'nt':
+            ctypes.windll.user32.LockWorkStation()
+        else:
+            #locks osX
+            os.popen('/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend')
+            #locks ubuntu
+            os.popen('gnome-screensaver-command --lock')
 
     ##
     # Calculates the distance between two face descriptors
@@ -203,7 +220,7 @@ class MonitorFace(Frame):
         self.take_photo()
         distance = 0
         # Now process all the images
-        img = io.imread("verify.jpg")
+        img = imread("verify.jpg")
 
         # Ask the detector to find the bounding boxes of each face. The 1 in the
         # second argument indicates that we should upsample the image 1 time. This
@@ -250,3 +267,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
