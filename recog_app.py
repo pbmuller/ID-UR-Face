@@ -4,10 +4,7 @@ import dlib
 import glob
 import math
 import time
-try:
-    from Tkinter import *
-except:
-    from tkinter import *
+from tkinter import *
 from skimage import io
 
 #paths for accessing resources
@@ -113,6 +110,7 @@ def recog():
        	if len(dets) < 1:
        		print("There are no faces in this")
        	elif len(dets) == 1:
+<<<<<<< HEAD
             for k, d in enumerate(dets):
                 print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
                     k, d.left(), d.top(), d.right(), d.bottom()))
@@ -128,6 +126,23 @@ def recog():
                 calc_distance();
                 
                 print(total)
+=======
+	        for k, d in enumerate(dets):
+	            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
+	                k, d.left(), d.top(), d.right(), d.bottom()))
+	            # Get the landmarks/parts for the face in box d.
+	            shape = sp(img, d)
+	            # Draw the face landmarks on the screen so we can see what face is currently being processed.
+	            win.clear_overlay()
+	            win.add_overlay(d)
+	            win.add_overlay(shape)
+
+	            face_descriptor = facerec.compute_face_descriptor(img, shape)
+
+	            calc_distance();
+	            
+	            print(total)
+>>>>>>> 479e3fad0ef968e65e66e80612289d74ec4b84b0
         else:
             lock()
 ##
