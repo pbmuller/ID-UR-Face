@@ -4,7 +4,10 @@ import dlib
 import glob
 import math
 import time
-from Tkinter import *
+try:
+    from Tkinter import *
+except:
+    from tkinter import *
 from skimage import io
 
 #paths for accessing resources
@@ -19,8 +22,8 @@ detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
-current_loaded_user = "";
-faces = [];
+current_loaded_user = ""
+faces = []
 
 run = False
 
@@ -110,23 +113,23 @@ def recog():
        	if len(dets) < 1:
        		print("There are no faces in this")
        	elif len(dets) == 1:
-	        for k, d in enumerate(dets):
-	            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-	                k, d.left(), d.top(), d.right(), d.bottom()))
-	            # Get the landmarks/parts for the face in box d.
-	            shape = sp(img, d)
-	            # Draw the face landmarks on the screen so we can see what face is currently being processed.
-	            win.clear_overlay()
-	            win.add_overlay(d)
-	            win.add_overlay(shape)
+            for k, d in enumerate(dets):
+                print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
+                    k, d.left(), d.top(), d.right(), d.bottom()))
+                # Get the landmarks/parts for the face in box d.
+                shape = sp(img, d)
+                # Draw the face landmarks on the screen so we can see what face is currently being processed.
+                win.clear_overlay()
+                win.add_overlay(d)
+                win.add_overlay(shape)
 
-	            face_descriptor = facerec.compute_face_descriptor(img, shape)
+                face_descriptor = facerec.compute_face_descriptor(img, shape)
 
-	            calc_distance();
-	            
-	            print(total)
-		else:
-			lock()
+                calc_distance();
+                
+                print(total)
+        else:
+            lock()
 ##
 # Locks the Operating System
 ##
@@ -134,14 +137,14 @@ def lock():
     os.popen('gnome-screensaver-command --lock')
 
 def start_timer():
-	run = True
-	while run:
-		time.sleep(10)
-		print("hey")
-	print("timer ended")
+    run = True
+    while run:
+        time.sleep(10)
+        print("hey")
+    print("timer ended")
 
 def stop_timer():
-	run = false;
+    run = false;
 
 root = Tk()
 

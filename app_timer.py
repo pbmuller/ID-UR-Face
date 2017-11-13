@@ -4,7 +4,10 @@ import dlib
 import glob
 import math
 import time
-from Tkinter import *
+try:
+    from Tkinter import *
+except:
+    from tkinter import *
 from skimage import io
 
 #paths for accessing resources
