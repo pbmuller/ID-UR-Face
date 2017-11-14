@@ -372,6 +372,10 @@ class MonitorFace(Frame):
             self.lock()
             self.Stop() 
         avg_distance = distance / num_reference
+        if avg_distance > .6:
+        	self.lock()
+        	self.Stop()
+
         print(distance)
         print(avg_distance)
 
