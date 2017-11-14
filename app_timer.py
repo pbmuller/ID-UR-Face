@@ -10,7 +10,6 @@ import dlib
 import glob
 import math
 import time
-
 import ctypes
 from cv2 import *
 from tkinter import *
@@ -36,7 +35,7 @@ saved_photos = 0
 cam = VideoCapture(0)   # 0: index of camera
 
 #list of current users
-user_list = []
+user_list = [""]
 
 ##
 # create_new_user
@@ -223,7 +222,7 @@ class MonitorFace(Frame):
         self.toolbar = Frame(self)                       
 
         self.user_option = StringVar(self.toolbar)
-        self.user_option.set("Select User") # default value
+        self.user_option.set(user_list[0]) # default value
         self.w = OptionMenu(self.toolbar, self.user_option , *user_list)
         self.w.pack()
 
@@ -256,15 +255,14 @@ class MonitorFace(Frame):
     # Called when start button is pressed, loads the requested user's data and begins
     # monitoring whether that user is present at each check
     ##
-    def Start(self):
-        if self.user_option != "Select User"                                   
-	        if not self._running:            
-                if self.current_user != self.user_option.get():
-                    self.load_user()
-                self._start = time.time() - self._elapsedtime
-                self.time_since_last_update = 0.0
-                self._update()
-                self._running = 1
+    def Start(self):                                   
+        if not self._running:            
+            if self.current_user != self.user_option.get():
+                self.load_user()
+            self._start = time.time() - self._elapsedtime
+            self.time_since_last_update = 0.0
+            self._update()
+            self._running = 1
     
     ##
     # Stop
