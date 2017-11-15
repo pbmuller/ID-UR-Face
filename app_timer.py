@@ -4,22 +4,16 @@ import dlib
 import glob
 import math
 import time
+
 import ctypes
 from cv2 import *
-from tkinter import *
-# from skimage import io
+import tkinter as tk
 from scipy.misc import imread
-from utility import proper_slash
-
-#get proper slash for file path based off os
-ps = proper_slash()
 
 #paths for accessing resources
-predictor_path = ".{}res{}shape_predictor_68_face_landmarks.dat".format(ps, ps)
-face_rec_model_path = ".{}res{}dlib_face_recognition_resnet_model_v1.dat".format(ps, ps)
-setup_folder_path = ".{}users".format(ps)
-
-print("able to set paths\n")
+predictor_path = "./res/shape_predictor_68_face_landmarks.dat"
+face_rec_model_path = "./res/dlib_face_recognition_resnet_model_v1.dat"
+setup_folder_path = "./users"
 
 # Load all the models we need: a detector to find the faces, a shape predictor
 # to find face landmarks so we can precisely localize the face, and finally the
@@ -28,36 +22,44 @@ detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
-print("able to load models")
-
 num_reference = 5
 saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
 
-print("able to access camera")
+user_list = os.listdir('./users')
 
-user_list = ["Doug", "Patrick"]
+def how_to():
+    win = tk.Toplevel()
+    win.wm_title("How To")
 
-def create_new_user():
-    win = Toplevel()
+    win.resizable(width=False, height=False)
+    win.geometry('{}x{}'.format(400, 300))
+
+    how_to_file = open("./res/how_to.txt", "r")
+    how_to_text = tk.Text(win, wrap=tk.WORD)
+    how_to_text.pack()
+    how_to_text.insert(END, how_to_file.read())
+
+def create_new_user(sw):
+    win = tk.Toplevel()
     win.wm_title("User Creation")
 
     win.resizable(width=False, height=False)
     win.geometry('{}x{}'.format(400, 300))
-    Label(win, text="Enter User Name").pack()
-    user_name = Entry(win)
+    tk.Label(win, text="Enter User Name").pack()
+    user_name = tk.Entry(win)
     user_name.pack()
 
-    Button(win, text="Create User", command=lambda:checkUsername(user_name.get(), win)).pack()
+    tk.Button(win, text="Create User", command=lambda:checkUsername(user_name.get(), win, sw)).pack()
 
-def checkUsername(name, win):
-    if os.path.isfile(".{}users{}{}{}{}4".format(ps, ps, name, ps, name)):
-        Label(win, text="There is already a user with this name").pack()
+def checkUsername(name, win, sw):
+    if os.path.isfile("./users/{}/{}".format(name,name)):
+        tk.Label(win, text="There is already a user with this name").pack()
     else:
         user_list.append(name)
         print(user_list)
-        create_reference_faces(name)
+        create_reference_faces(name, sw)
         win.destroy()
 
 def reference_img(name, index):
@@ -66,39 +68,40 @@ def reference_img(name, index):
         imshow("Face-Reference-{}".format(index),img)
         waitKey(0)
         destroyWindow("Face-Reference-{}".format(index))
-        imwrite(".{}users{}{}{}pics{}{}.jpg".format(ps, ps, name, ps, ps, index),img) #save image
+        imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
 
-def create_reference_faces(name):
-    os.makedirs(".{}users{}{}".format(ps, ps, name))
-    os.makedirs(".{}users{}{}{}pics".format(ps, ps, name, ps))
+def create_reference_faces(name, sw):
+    os.makedirs("./users/{}".format(name))
+    os.makedirs("./users/{}/pics".format(name))
     saved_photos = 0
     if saved_photos < 5:
         print("here : " + str(saved_photos))
-        use_img_prompt(name, saved_photos)
+        use_img_prompt(name, saved_photos, sw)
         saved_photos += 1
         print("out")
 
-def use_img_prompt(name, index):
-    conf = Toplevel()
+def use_img_prompt(name, index, sw):
+    conf = tk.Toplevel()
     conf.wm_title("Use photo as a reference?")
 
     conf.resizable(width=False, height=False)
     conf.geometry('{}x{}'.format(400, 300))
-    Label(conf, text="Would you like to use that picture as a reference for your face?").pack()
+
+    tk.Label(conf, text="Would you like to use that picture as a reference for your face?").pack()
 
     reference_img(name, index)
 
-    Button(conf, text="Confirm", command=lambda:create_map_file(name, index)).pack()
-    Button(conf, text="Use different picture", command=lambda:new_img_prompt(conf, name, index)).pack()
+    tk.Button(conf, text="Confirm", command=lambda: create_map_file(conf, name, index, sw)).pack()
+    tk.Button(conf, text="Use different picture", command=lambda: new_img_prompt(conf, name, index, sw)).pack()
 
-def new_img_prompt(conf, name, index):
+def new_img_prompt(conf, name, index, sw):
     conf.destroy()
-    use_img_prompt(name, index)
+    use_img_prompt(name, index, sw)
 
-def create_map_file(name, index):
-    new_file = open(".{}users{}{}{}{}{}".format(ps, ps, name, ps, name, index), 'w')
+def create_map_file(conf, name, index, sw):
+    new_file = open("./users/{}/{}{}".format(name, name, index), 'w')
     
-    img = imread(".{}users{}{}{}pics{}{}.jpg".format(ps, ps, name, ps, ps, index))
+    img = imread("./users/{}/pics/{}.jpg".format(name, index))
     dets = detector(img, 1)
     for k, d in enumerate(dets):
         print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
@@ -112,12 +115,19 @@ def create_map_file(name, index):
             new_file.write(str(point) + "\n")
 
     new_file.close()
+    conf.destroy()
+    sw.refresh()
 
 
-class MonitorFace(Frame):
+
+def update_status():
+    pass
+    
+
+class MonitorFace(tk.Frame):
                                                                 
     def __init__(self, parent=None, **kw):        
-        Frame.__init__(self, parent, kw)
+        tk.Frame.__init__(self, parent, kw)
         self._start = 0.0        
         self._elapsedtime = 0.0
         self._running = 0
@@ -127,16 +137,27 @@ class MonitorFace(Frame):
         self.user_option = user_list[0]
         self.makeWidgets()
 
+
     def makeWidgets(self):  
 
-        self.toolbar = Frame(self)                       
+        self.toolbar = tk.Frame(self)                       
 
-        self.user_option = StringVar(self.toolbar)
+        self.user_option = tk.StringVar(self.toolbar)
         self.user_option.set(user_list[0]) # default value
-        self.w = OptionMenu(self.toolbar, self.user_option , *user_list)
+        self.w = tk.OptionMenu(self.toolbar, self.user_option , *user_list)
         self.w.pack()
 
-        self.toolbar.pack(side=TOP, fill=X)
+        self.toolbar.pack(side=tk.TOP, fill=tk.X)
+
+    def refresh(self):
+        # Reset var and delete all old options
+        self.user_option.set('')
+        self.w['menu'].delete(0, 'end')
+
+        # Insert list of new options (tk._setit hooks them up to var)
+        self.user_option.set(user_list[0])
+        for user in user_list:
+            self.w['menu'].add_command(label=user, command=tk._setit(self.user_option, user))
    
     def _update(self): 
         self._elapsedtime = time.time() - self._start
@@ -147,21 +168,21 @@ class MonitorFace(Frame):
             print(len(self.loaded_faces))
             self.time_since_last_update = 0
         
-    def Start(self):                                   
-        if not self._running:            
+    def Start(self):
+        if not self._running:
             if self.current_user != self.user_option.get():
                 self.load_user()
             self._start = time.time() - self._elapsedtime
             self.time_since_last_update = 0.0
             self._update()
-            self._running = 1        
+            self._running = 1
     
-    def Stop(self):                                    
+    def Stop(self):
         if self._running:
-            self.after_cancel(self._timer)            
+            self.after_cancel(self._timer)
             self._elapsedtime = 0
             self._running = 0
-            if os.path.isfile('.{}verify.jpg'.format(ps)):
+            if os.path.isfile('./verify.jpg'):
                 os.remove("verify.jpg")
 
     def take_photo(self):
@@ -185,22 +206,18 @@ class MonitorFace(Frame):
         file_num = 0
         self.current_user = self.user_option.get()
         self.loaded_faces = []
-        for f in glob.glob(os.path.join(setup_folder_path + "{}{}{}pics".format(ps, self.user_option.get(), ps, "*.jpg"))):
+        for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics".format(self.user_option.get(), "*.jpg"))):
             print("Processing file: {}".format(f))
-            self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "{}{}{}{}{}".format(ps, self.user_option.get(), ps, self.user_option.get(), file_num)))
+            self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
 
     ##
     # Locks the Operating System
     ##
     def lock(self):
-        # I don't think that this will actually lock a computer, unless it is windows OS
-        if os.name == 'nt':
+        try:
             ctypes.windll.user32.LockWorkStation()
-        else:
-            #locks osX
+        except:
             os.popen('/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend')
-            #locks ubuntu
-            os.popen('gnome-screensaver-command --lock')
 
     ##
     # Calculates the distance between two face descriptors
@@ -245,23 +262,32 @@ class MonitorFace(Frame):
             self.lock()
             self.Stop() 
         avg_distance = distance / num_reference
-        print(distance)
-        print(avg_distance)
+        if avg_distance > 0.1:
+            self.lock()
+            self.Stop()
+        print("distance = {}".format(distance))
+        print("average distance = {}".format(avg_distance))
 
 def main():
-    root = Tk()
+    root = tk.Tk()
     root.resizable(width=False, height=False)
     root.geometry('{}x{}'.format(400, 300))
 
     #root.wm_attributes("-topmost", 1)      #always on top - might do a button for it
     sw = MonitorFace(root)
-    sw.pack(side=TOP)
+    sw.pack()
 
-    
+    start_button = tk.Button(root, text='Start', width=15,command=sw.Start)
+    start_button.pack()
+    stop_button = tk.Button(root, text='Stop', width=15, command=sw.Stop)
+    stop_button.pack()
+    create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(sw))
+    create_new_user_button.pack()
+    how_to_button = tk.Button(root, text='How-To', width=15, command=how_to)
+    how_to_button.pack()
 
-    Button(root, text='Start', command=sw.Start).pack(side=LEFT)
-    Button(root, text='Stop', command=sw.Stop).pack(side=LEFT)
-    Button(root, text='create_new_user', command=create_new_user).pack(side=LEFT)
+    status_label = tk.Label(root, text="Status: {}".format("inactive"))
+    status_label.pack()
     
     root.mainloop()
 
