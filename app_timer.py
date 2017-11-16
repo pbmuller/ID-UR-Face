@@ -40,8 +40,8 @@ def how_to():
 
     how_to_file = open("./res/how_to.txt", "r")
     how_to_text = tk.Text(win, wrap=tk.WORD)
+    how_to_text.insert(tk.END, how_to_file.read())
     how_to_text.pack()
-    how_to_text.insert(END, how_to_file.read())
 
 def create_new_user(sw):
     win = tk.Toplevel()
@@ -149,6 +149,7 @@ class MonitorFace(tk.Frame):
         self.user_option = tk.StringVar(self.toolbar)
         self.user_option.set(user_list[0]) # default value
         self.w = tk.OptionMenu(self.toolbar, self.user_option , *user_list)
+        self.w.config(width=15)
         self.w.pack()
 
         self.toolbar.pack(side=tk.TOP, fill=tk.X)
@@ -274,6 +275,7 @@ class MonitorFace(tk.Frame):
 
 def main():
     root = tk.Tk()
+    root.title("Face is the Place")
     root.resizable(width=False, height=False)
     root.geometry('{}x{}'.format(400, 300))
 
