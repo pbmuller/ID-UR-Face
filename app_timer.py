@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 import dlib
 import glob
 import math
@@ -27,9 +28,13 @@ saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
 
-user_list = os.listdir('./users')
-if len(user_list) == 0:
-    user_list.append('')
+def get_users():
+    user_list = os.listdir('./users')
+    if len(user_list) == 0:
+        user_list.append('No Users Found')
+    return user_list
+
+user_list = get_users()
 
 def how_to():
     win = tk.Toplevel()
@@ -120,13 +125,25 @@ def create_map_file(conf, name, index, sw):
     conf.destroy()
     sw.refresh()
 
-def delete_user(sw):
-    selected_user = sw.user_option
-    print(selected_user.__dict__)
+def delete_user_with_prompt(parent, sw):
+    conf = tk.Toplevel()
+    conf.wm_title("Delete User?")
 
-def update_status():
-    pass
-    
+    conf.resizable(width=False, height=False)
+    conf.geometry('{}x{}'.format(400, 300))
+
+    user = sw.user_option.get()
+
+    tk.Label(conf, text="Would you like to delete the User profile {}".format(user)).pack()
+
+    tk.Button(conf, text="Confirm", command=lambda: delete_user(conf, user, sw)).pack()
+    tk.Button(conf, text="Use different picture", command=lambda: conf.destroy()).pack()
+    # parent.wait_window(conf)
+
+def delete_user(conf, user, sw):
+    shutil.rmtree('./users/{}'.format(user))    
+    conf.destroy()
+    sw.refresh()
 
 class MonitorFace(tk.Frame):
                                                                 
@@ -158,7 +175,7 @@ class MonitorFace(tk.Frame):
         # Reset var and delete all old options
         self.user_option.set('')
         self.w['menu'].delete(0, 'end')
-
+        user_list = get_users()
         # Insert list of new options (tk._setit hooks them up to var)
         self.user_option.set(user_list[0])
         for user in user_list:
@@ -291,7 +308,7 @@ def main():
     stop_button.pack()
     create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(sw))
     create_new_user_button.pack()
-    delete_user_button = tk.Button(root, text='Delete Current User', width=15, command=lambda: delete_user(sw))
+    delete_user_button = tk.Button(root, text='Delete Current User', width=15, command=lambda: delete_user_with_prompt(root, sw))
     delete_user_button.pack()
     how_to_button = tk.Button(root, text='How-To', width=15, command=how_to)
     how_to_button.pack()
