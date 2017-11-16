@@ -216,7 +216,7 @@ class MonitorFace(tk.Frame):
         self.time_since_last_update += 1
         if self.time_since_last_update >= 10:
             self.recog()
-            print(len(self.loaded_faces))
+            print("loaded faces: " + str(len(self.loaded_faces)))
             self.time_since_last_update = 0
         
     def Start(self):
@@ -259,7 +259,7 @@ class MonitorFace(tk.Frame):
         file_num = 0
         self.current_user = self.user_option.get()
         self.loaded_faces = []
-        for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics".format(self.user_option.get(), "*.jpg"))):
+        for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics/{}".format(self.user_option.get(), "*.jpg"))):
             print("Processing file: {}".format(f))
             self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
 
@@ -315,7 +315,7 @@ class MonitorFace(tk.Frame):
             self.lock()
             self.Stop() 
         avg_distance = distance / num_reference
-        if avg_distance > 0.1:
+        if avg_distance > 0.6:
             self.lock()
             self.Stop()
         print("distance = {}".format(distance))
