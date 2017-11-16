@@ -28,6 +28,16 @@ saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
 
+# check for the users directory
+directory = os.listdir()
+users_flag = False
+for entry in directory:
+    if entry == 'users':
+        users_flag = True
+if not users_flag:
+    os.makedirs('./users')
+
+
 def get_users():
     user_list = os.listdir('./users')
     if len(user_list) == 0:
