@@ -80,17 +80,6 @@ def create_new_user(root, sw):
 
     root.wait_window(win)
 
-##
-# add_user_to_file
-#
-# Adds the new user to the list of user names in user_file
-##
-def add_user_to_file(name):
-    new_file = open(setup_folder_path + "/users_file.txt", 'a')
-    new_file.write(name + "\n")
-    new_file.close()
-
-
 def checkUsername(name, win, sw):
     if os.path.isfile("./users/{}/{}".format(name,name)):
         tk.Label(win, text="There is already a user with this name").pack()
