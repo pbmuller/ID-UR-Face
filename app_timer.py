@@ -76,17 +76,14 @@ def create_new_user(root, sw):
     user_name = tk.Entry(win)
     user_name.pack()
 
-    tk.Button(win, text="Create User", command=lambda:checkUsername(user_name.get(), win, sw)).pack()
+    tk.Button(win, text="Create User", command=lambda:check_username(user_name.get(), win, sw)).pack()
 
     root.wait_window(win)
 
-def checkUsername(name, win, sw):
-    if os.path.isfile("./users/{}/{}".format(name,name)):
+def check_username(name, win, sw):
+    if os.path.isfile("./users/{}".format(name)):
         tk.Label(win, text="There is already a user with this name").pack()
     else:
-        add_user_to_file(name)
-        user_list.append(name)
-        print(user_list)
         create_reference_faces(name, win, sw)
 
 def reference_img(name, index):
