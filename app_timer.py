@@ -94,12 +94,19 @@ def check_username(name, win, sw):
         create_reference_faces(name, win, sw)
 
 def reference_img(name, index):
-    s, img = cam.read()
-    if s:
-        imshow("Face-Reference-{}".format(index),img)
-        waitKey(0)
-        destroyWindow("Face-Reference-{}".format(index))
-        imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
+    face_found = False
+    while not face_found:
+        s, img = cam.read()
+        if s:
+            dets = detector(img, 1)
+            print(len(dets))
+            if len(dets) == 1:
+                face_found = True
+                imshow("Face-Reference-{}".format(index),img)
+                waitKey(0)
+                destroyWindow("Face-Reference-{}".format(index))
+                imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
+
 
 def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}".format(name))
