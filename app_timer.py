@@ -37,7 +37,6 @@ for entry in directory:
 if not users_flag:
     os.makedirs('./users')
 
-
 def get_users():
     user_list = os.listdir('./users')
     if len(user_list) == 0:
@@ -48,14 +47,14 @@ user_list = get_users()
 
 
 def how_to():
-    howt = tk.Toplevel()
-    howt.wm_title("How To")
+    howto = tk.Toplevel()
+    howto.wm_title("How To")
 
-    howt.resizable(width=False, height=False)
-    win.geometry('{}x{}'.format(400, 300))
+    howto.resizable(width=False, height=False)
+    howto.geometry('{}x{}'.format(400, 300))
 
     how_to_file = open("./res/how_to.txt", "r")
-    how_to_text = tk.Text(howt, wrap=tk.WORD)
+    how_to_text = tk.Text(howto, wrap=tk.WORD)
     how_to_text.insert(tk.END, how_to_file.read())
     how_to_text.pack()
 
