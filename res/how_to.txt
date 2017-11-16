@@ -1,0 +1,9 @@
+Welcome to our software! We're excited to offer a more secure experience while using your laptop in public!
+
+What is the issue that we are trying to solve?
+	While we often take create cares to keep our digital information private, we don't normally take that same level of precaution with the thing that allows us to see that digital information. The Screen! 
+
+    A lot of the time, we might not care if other people can see what we are looking at, but other times, we want our screen to be for our eyes only. So we did just that. By using facial recognition and your webcam, you can ensure that you're the only person who will be able to see what is on your screen, and you'll know if anyone else tries because the screen will lock automatically. 
+
+How to use:
+    Simply press the start button, and we will passively check your webcam in the back ground every 5 seconds. If we see you, then you're good to go and you will experience no interuptions in your laptop using experience. But if we don't see you, or if we see someone else, then we lock your screen. All you have to do is unlock your screen as you normally would to resume using your computer. 
