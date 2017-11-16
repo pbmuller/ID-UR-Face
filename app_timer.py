@@ -28,6 +28,8 @@ saved_photos = 0
 cam = VideoCapture(0)   # 0 -> index of camera
 
 user_list = os.listdir('./users')
+if len(user_list) == 0:
+    user_list.append('')
 
 def how_to():
     win = tk.Toplevel()
@@ -118,7 +120,9 @@ def create_map_file(conf, name, index, sw):
     conf.destroy()
     sw.refresh()
 
-
+def delete_user(sw):
+    selected_user = sw.user_option
+    print(selected_user.__dict__)
 
 def update_status():
     pass
@@ -283,6 +287,8 @@ def main():
     stop_button.pack()
     create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(sw))
     create_new_user_button.pack()
+    delete_user_button = tk.Button(root, text='Delete Current User', width=15, command=lambda: delete_user(sw))
+    delete_user_button.pack()
     how_to_button = tk.Button(root, text='How-To', width=15, command=how_to)
     how_to_button.pack()
 
