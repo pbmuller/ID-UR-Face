@@ -175,6 +175,7 @@ class MonitorFace(tk.Frame):
         
     def Start(self):
         if not self._running:
+            status.set("Status: Running")
             if self.current_user != self.user_option.get():
                 self.load_user()
             self._start = time.time() - self._elapsedtime
@@ -184,6 +185,7 @@ class MonitorFace(tk.Frame):
     
     def Stop(self):
         if self._running:
+            status.set("Status: Inactive")
             self.after_cancel(self._timer)
             self._elapsedtime = 0
             self._running = 0
@@ -294,7 +296,10 @@ def main():
     how_to_button = tk.Button(root, text='How-To', width=15, command=how_to)
     how_to_button.pack()
 
-    status_label = tk.Label(root, text="Status: {}".format("inactive"))
+    global status
+    status = tk.StringVar()
+    status.set("Status: Inactive")
+    status_label = tk.Label(root, textvariable=status)
     status_label.pack()
     
     root.mainloop()
