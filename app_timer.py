@@ -28,6 +28,8 @@ saved_photos = 0
 cam = VideoCapture(0)   # 0 -> index of camera
 
 user_list = os.listdir('./users')
+if len(user_list) == 0:
+	user_list.append('')
 
 def how_to():
     win = tk.Toplevel()
@@ -293,5 +295,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
