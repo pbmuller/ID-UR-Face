@@ -37,8 +37,11 @@ for entry in directory:
 if not users_flag:
     os.makedirs('./users')
 
+
 def get_users():
     user_list = os.listdir('./users')
+    global user_count
+    user_count = len(user_list)
     if len(user_list) == 0:
         user_list.append('No Users Found')
     return user_list
@@ -57,14 +60,6 @@ def how_to():
     how_to_text = tk.Text(howto, wrap=tk.WORD)
     how_to_text.insert(tk.END, how_to_file.read())
     how_to_text.pack()
-
-def get_users():
-    user_list = os.listdir('./users')
-    if len(user_list) == 0:
-        user_list.append('No Users Found')
-    return user_list
-
-user_list = get_users()
 
 def create_new_user(root, sw):
     win = tk.Toplevel()
@@ -90,6 +85,7 @@ def check_username(name, win, sw, error_label):
     if user_already_exists:
         error_label.pack()
     else:
+        error_label.pack_forget()
         create_reference_faces(name, win, sw)
 
 def reference_img(name, index):
@@ -160,6 +156,16 @@ def create_map_file(conf, name, index):
     new_file.close()
     conf.destroy()
 
+def create_user_prompt():
+    conf = tk.Toplevel()
+    conf.wm_title("Must Make a User Profile")
+
+    conf.resizable(width=False, height=False)
+    conf.geometry('{}x{}'.format(400, 300))
+
+    tk.Label(conf, text="No User profiles found. You must make a user profile first!").pack()
+    tk.Button(conf, text="Confirm", command=conf.destroy).pack()
+
 def delete_user_with_prompt(parent, sw):
     conf = tk.Toplevel()
     conf.wm_title("Delete User?")
@@ -226,14 +232,17 @@ class MonitorFace(tk.Frame):
             self.time_since_last_update = 0
         
     def Start(self):
-        if not self._running:
-            status.set("Status: Running")
-            if self.current_user != self.user_option.get():
-                self.load_user()
-            self._start = time.time() - self._elapsedtime
-            self.time_since_last_update = 0.0
-            self._update()
-            self._running = 1
+        if user_count > 0:
+            if not self._running:
+                status.set("Status: Running")
+                if self.current_user != self.user_option.get():
+                    self.load_user()
+                self._start = time.time() - self._elapsedtime
+                self.time_since_last_update = 0.0
+                self._update()
+                self._running = 1
+        else:
+            create_user_prompt()
     
     def Stop(self):
         if self._running:
