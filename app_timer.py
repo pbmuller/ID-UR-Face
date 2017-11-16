@@ -28,6 +28,22 @@ saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
 
+user_list = os.listdir('./users')
+if len(user_list) == 0:
+    user_list.append('')
+
+def how_to():
+    howt = tk.Toplevel()
+    howt.wm_title("How To")
+
+    howt.resizable(width=False, height=False)
+    win.geometry('{}x{}'.format(400, 300))
+
+    how_to_file = open("./res/how_to.txt", "r")
+    how_to_text = tk.Text(howt, wrap=tk.WORD)
+    how_to_text.insert(tk.END, how_to_file.read())
+    how_to_text.pack()
+
 def get_users():
     user_list = os.listdir('./users')
     if len(user_list) == 0:
@@ -36,19 +52,7 @@ def get_users():
 
 user_list = get_users()
 
-def how_to():
-    win = tk.Toplevel()
-    win.wm_title("How To")
-
-    win.resizable(width=False, height=False)
-    win.geometry('{}x{}'.format(400, 300))
-
-    how_to_file = open("./res/how_to.txt", "r")
-    how_to_text = tk.Text(win, wrap=tk.WORD)
-    how_to_text.insert(tk.END, how_to_file.read())
-    how_to_text.pack()
-
-def create_new_user(sw):
+def create_new_user(root, sw):
     win = tk.Toplevel()
     win.wm_title("User Creation")
 
@@ -60,14 +64,27 @@ def create_new_user(sw):
 
     tk.Button(win, text="Create User", command=lambda:checkUsername(user_name.get(), win, sw)).pack()
 
+    root.wait_window(win)
+
+##
+# add_user_to_file
+#
+# Adds the new user to the list of user names in user_file
+##
+def add_user_to_file(name):
+    new_file = open(setup_folder_path + "/users_file.txt", 'a')
+    new_file.write(name + "\n")
+    new_file.close()
+
+
 def checkUsername(name, win, sw):
     if os.path.isfile("./users/{}/{}".format(name,name)):
         tk.Label(win, text="There is already a user with this name").pack()
     else:
+        add_user_to_file(name)
         user_list.append(name)
         print(user_list)
-        create_reference_faces(name, sw)
-        win.destroy()
+        create_reference_faces(name, win, sw)
 
 def reference_img(name, index):
     s, img = cam.read()
@@ -77,35 +94,41 @@ def reference_img(name, index):
         destroyWindow("Face-Reference-{}".format(index))
         imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
 
-def create_reference_faces(name, sw):
+def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}".format(name))
     os.makedirs("./users/{}/pics".format(name))
     saved_photos = 0
-    if saved_photos < 5:
+    while saved_photos < 5:
         print("here : " + str(saved_photos))
-        use_img_prompt(name, saved_photos, sw)
-        saved_photos += 1
+        conf = tk.Toplevel()
+        # Create window
+        conf.wm_title("Use photo as a reference {}?".format(saved_photos))
+        conf.resizable(width=False, height=False)
+        conf.geometry('{}x{}'.format(400, 300))
+
+        # Ask if user wants to use that photo as a reference and create buttons as options
+        tk.Label(conf, text="Would you like to use that picture as a reference for your face?").pack()
+        # Create buttons for the user to confirm or deny the current photo
+        tk.Button(conf, text="Confirm", command=lambda:create_map_file(conf, name, saved_photos)).pack()
+        tk.Button(conf, text="Use different picture", command=lambda:new_img_prompt(conf, name, saved_photos)).pack()
+        
+        use_img_prompt(name, saved_photos)
+
+        win.wait_window(conf)
+
+        if os.path.isfile(setup_folder_path + "/{}/{}{}".format(name,name,saved_photos)):
+            saved_photos += 1
         print("out")
+    sw.refresh()
+    win.destroy()
 
-def use_img_prompt(name, index, sw):
-    conf = tk.Toplevel()
-    conf.wm_title("Use photo as a reference?")
-
-    conf.resizable(width=False, height=False)
-    conf.geometry('{}x{}'.format(400, 300))
-
-    tk.Label(conf, text="Would you like to use that picture as a reference for your face?").pack()
-
+def use_img_prompt(name, index):
     reference_img(name, index)
 
-    tk.Button(conf, text="Confirm", command=lambda: create_map_file(conf, name, index, sw)).pack()
-    tk.Button(conf, text="Use different picture", command=lambda: new_img_prompt(conf, name, index, sw)).pack()
-
-def new_img_prompt(conf, name, index, sw):
+def new_img_prompt(conf, name, index):
     conf.destroy()
-    use_img_prompt(name, index, sw)
 
-def create_map_file(conf, name, index, sw):
+def create_map_file(conf, name, index):
     new_file = open("./users/{}/{}{}".format(name, name, index), 'w')
     
     img = imread("./users/{}/pics/{}.jpg".format(name, index))
@@ -123,7 +146,6 @@ def create_map_file(conf, name, index, sw):
 
     new_file.close()
     conf.destroy()
-    sw.refresh()
 
 def delete_user_with_prompt(parent, sw):
     conf = tk.Toplevel()
@@ -306,7 +328,7 @@ def main():
     start_button.pack()
     stop_button = tk.Button(root, text='Stop', width=15, command=sw.Stop)
     stop_button.pack()
-    create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(sw))
+    create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(root, sw))
     create_new_user_button.pack()
     delete_user_button = tk.Button(root, text='Delete Current User', width=15, command=lambda: delete_user_with_prompt(root, sw))
     delete_user_button.pack()
