@@ -76,20 +76,19 @@ def create_new_user(root, sw):
     user_name = tk.Entry(win)
     user_name.pack()
     error_label = tk.Label(win, text="There is already a user with this name")
-
-    tk.Button(win, text="Create User", command=lambda: check_username(user_name.get(), win, sw)).pack()
+    tk.Button(win, text="Create User", command=lambda: check_username(user_name.get(), win, sw, error_label)).pack()
 
     root.wait_window(win)
 
-def check_username(name, win, sw):
+def check_username(name, win, sw, error_label):
     user_already_exists = False
-
+    error_label.pack_forget()
     users = get_users()
     for user in users:
         if name == user:
             user_already_exists = True
     if user_already_exists:
-        error_label
+        error_label.pack()
     else:
         create_reference_faces(name, win, sw)
 
