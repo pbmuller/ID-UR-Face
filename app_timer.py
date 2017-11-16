@@ -28,6 +28,8 @@ saved_photos = 0
 
 cam = VideoCapture(0)   # 0 -> index of camera
 
+interval_options = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+
 # check for the users directory
 directory = os.listdir()
 users_flag = False
@@ -72,6 +74,7 @@ def create_new_user(root, sw):
     user_name.pack()
     error_label = tk.Label(win, text="There is already a user with this name")
     tk.Button(win, text="Create User", command=lambda: check_username(user_name.get(), win, sw, error_label)).pack()
+    tk.Button(win, text="Cancel", command=win.destroy).pack()
 
     root.wait_window(win)
 
@@ -105,6 +108,7 @@ def reference_img(name, index):
 
 def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}".format(name))
+    shutil.copyfile('./res/default_settings.txt', './users/{}/settings.txt'.format(name))
     os.makedirs("./users/{}/pics".format(name))
     saved_photos = 0
     while saved_photos < 5:
@@ -166,20 +170,76 @@ def create_user_prompt():
     tk.Label(conf, text="No User profiles found. You must make a user profile first!").pack()
     tk.Button(conf, text="Confirm", command=conf.destroy).pack()
 
-def delete_user_with_prompt(parent, sw):
+def manage_profile_settings(sw):
+    if user_count > 0:
+        user = sw.user_option.get()
+
+        conf = tk.Toplevel()
+        conf.wm_title("Profile Settings: {}".format(user))
+
+        conf.resizable(width=False, height=False)
+        conf.geometry('{}x{}'.format(400, 300))
+
+        if not os.path.exists('./users/{}/settings.txt'.format(user)):
+            shutil.copyfile('./res/default_settings.txt', './users/{}/settings.txt'.format(user))
+
+        user_settings_file = open('./users/{}/settings.txt'.format(user), 'r+')
+        update_timer = tk.StringVar()
+        update_timer.set(user_settings_file.read())
+
+        print(update_timer.get())
+
+        seconds_label = tk.Label(conf, text="Seconds")
+        seconds_label.grid(row=0, column=1)
+        interval_label = tk.Label(conf, text="Recognition Interval")
+        interval_label.grid(row=1, column=0)
+        interval_entry = tk.OptionMenu(conf, update_timer, *interval_options)
+        interval_entry.grid(row=1, column=1)
+        confirm_button = tk.Button(conf, text="Confirm", command=lambda: update_settings(conf, update_timer, user_settings_file))
+        confirm_button.grid(row=2, column=0, sticky=tk.E)
+        cancel_button = tk.Button(conf, text="Cancel", command=conf.destroy)
+        cancel_button.grid(row=2, column=1, sticky=tk.W)
+    else:
+            create_user_prompt()
+
+def get_interval(sw):
+    user_settings_file = open('./users/{}/settings.txt'.format(sw.user_option.get()), 'r')
+
+    interval = int(user_settings_file.read())
+
+    user_settings_file.close()
+    return interval
+
+def update_settings(parent, new_interval, user_settings_file):
+    user_settings_file.seek(0, 0)
+    user_settings_file.write(new_interval.get())
+
     conf = tk.Toplevel()
-    conf.wm_title("Delete User?")
+    conf.wm_title("Confirm")
 
     conf.resizable(width=False, height=False)
     conf.geometry('{}x{}'.format(400, 300))
 
-    user = sw.user_option.get()
+    tk.Label(conf, text="Settings Updated!").pack()
+    tk.Button(conf, text="Aknowledged", command=conf.destroy).pack()
 
-    tk.Label(conf, text="Would you like to delete the User profile {}".format(user)).pack()
+def delete_user_with_prompt(parent, sw):
+    if user_count > 0:
+        conf = tk.Toplevel()
+        conf.wm_title("Delete User?")
 
-    tk.Button(conf, text="Confirm", command=lambda: delete_user(conf, user, sw)).pack()
-    tk.Button(conf, text="Cancel", command=lambda: conf.destroy()).pack()
-    # parent.wait_window(conf)
+        conf.resizable(width=False, height=False)
+        conf.geometry('{}x{}'.format(400, 300))
+
+        user = sw.user_option.get()
+
+        tk.Label(conf, text="Would you like to delete the User profile {}".format(user)).pack()
+
+        tk.Button(conf, text="Confirm", command=lambda: delete_user(conf, user, sw)).pack()
+        tk.Button(conf, text="Cancel", command=lambda: conf.destroy()).pack()
+        parent.wait_window(conf)
+    else:
+        create_user_prompt()
 
 def delete_user(conf, user, sw):
     shutil.rmtree('./users/{}'.format(user))    
@@ -223,10 +283,11 @@ class MonitorFace(tk.Frame):
             self.w['menu'].add_command(label=user, command=tk._setit(self.user_option, user))
    
     def _update(self): 
+        update_interval = get_interval(self)
         self._elapsedtime = time.time() - self._start
         self._timer = self.after(1000, self._update)
         self.time_since_last_update += 1
-        if self.time_since_last_update >= 10:
+        if self.time_since_last_update >= update_interval:
             self.recog()
             print("loaded faces: " + str(len(self.loaded_faces)))
             self.time_since_last_update = 0
@@ -352,6 +413,8 @@ def main():
     stop_button.pack()
     create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(root, sw))
     create_new_user_button.pack()
+    manage_profile_settings_button = tk.Button(root, text='Manage Profile', width=15, command=lambda: manage_profile_settings(sw))
+    manage_profile_settings_button.pack()
     delete_user_button = tk.Button(root, text='Delete Current User', width=15, command=lambda: delete_user_with_prompt(root, sw))
     delete_user_button.pack()
     how_to_button = tk.Button(root, text='How-To', width=15, command=how_to)
