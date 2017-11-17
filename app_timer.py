@@ -73,20 +73,24 @@ def create_new_user(root, sw):
     user_name = tk.Entry(win)
     user_name.pack()
     error_label = tk.Label(win, text="There is already a user with this name")
-    tk.Button(win, text="Create User", command=lambda: check_username(user_name.get(), win, sw, error_label)).pack()
+    error_label_2 = tk.Label(win, text="Username must be only characters in the alphabet")
+    tk.Button(win, text="Create User", command=lambda: check_username(user_name.get(), win, sw, error_label, error_label_2)).pack()
     tk.Button(win, text="Cancel", command=win.destroy).pack()
 
     root.wait_window(win)
 
-def check_username(name, win, sw, error_label):
+def check_username(name, win, sw, error_label, error_label_2):
     user_already_exists = False
     error_label.pack_forget()
+    error_label_2.pack_forget()
     users = get_users()
     for user in users:
         if name == user:
             user_already_exists = True
     if user_already_exists:
         error_label.pack()
+    elif not name.isalpha():
+        error_label_2.pack()
     else:
         error_label.pack_forget()
         create_reference_faces(name, win, sw)
@@ -187,7 +191,8 @@ def manage_profile_settings(sw):
         update_timer = tk.StringVar()
         update_timer.set(user_settings_file.read())
 
-        print(update_timer.get())
+        user_settings_file.close()
+        user_settings_file = open('./users/{}/settings.txt'.format(user), 'w')
 
         seconds_label = tk.Label(conf, text="Seconds")
         seconds_label.grid(row=0, column=1)
@@ -200,7 +205,7 @@ def manage_profile_settings(sw):
         cancel_button = tk.Button(conf, text="Cancel", command=conf.destroy)
         cancel_button.grid(row=2, column=1, sticky=tk.W)
     else:
-            create_user_prompt()
+        create_user_prompt()
 
 def get_interval(sw):
     user_settings_file = open('./users/{}/settings.txt'.format(sw.user_option.get()), 'r')
@@ -211,8 +216,8 @@ def get_interval(sw):
     return interval
 
 def update_settings(parent, new_interval, user_settings_file):
-    user_settings_file.seek(0, 0)
-    user_settings_file.write(new_interval.get())
+    print(new_interval.get())
+    user_settings_file.writelines([new_interval.get()])
 
     conf = tk.Toplevel()
     conf.wm_title("Confirm")
@@ -221,7 +226,7 @@ def update_settings(parent, new_interval, user_settings_file):
     conf.geometry('{}x{}'.format(400, 300))
 
     tk.Label(conf, text="Settings Updated!").pack()
-    tk.Button(conf, text="Aknowledged", command=conf.destroy).pack()
+    tk.Button(conf, text="K, Fam, U got IT", command=conf.destroy).pack()
 
 def delete_user_with_prompt(parent, sw):
     if user_count > 0:
