@@ -404,7 +404,7 @@ class MonitorFace(tk.Frame):
 
 def main():
     root = tk.Tk()
-    root.title("I C UR / Face (Integrated Continuous User Recognition / Face)")
+    root.title("ID UR / Face (Integrated Discrete User Recognition / Face)")
     root.resizable(width=False, height=False)
     root.geometry('{}x{}'.format(400, 300))
 
