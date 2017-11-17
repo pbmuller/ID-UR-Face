@@ -226,7 +226,7 @@ def update_settings(parent, new_interval, user_settings_file):
     conf.geometry('{}x{}'.format(400, 300))
 
     tk.Label(conf, text="Settings Updated!").pack()
-    tk.Button(conf, text="K, Fam, U got IT", command=conf.destroy).pack()
+    tk.Button(conf, text="Okay", command=conf.destroy).pack()
 
 def delete_user_with_prompt(parent, sw):
     if user_count > 0:
@@ -404,7 +404,7 @@ class MonitorFace(tk.Frame):
 
 def main():
     root = tk.Tk()
-    root.title("Face is the Place")
+    root.title("I C UR / Face (Integrated Continuous User Recognition / Face)")
     root.resizable(width=False, height=False)
     root.geometry('{}x{}'.format(400, 300))
 
