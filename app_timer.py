@@ -101,7 +101,7 @@ def reference_img(name, index):
         s, img = cam.read()
         if s:
             dets = detector(img, 1)
-            print(len(dets))
+            #print(len(dets))
             if len(dets) == 1:
                 face_found = True
                 imshow("Face-Reference-{}".format(index),img)
@@ -116,7 +116,7 @@ def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}/pics".format(name))
     saved_photos = 0
     while saved_photos < 5:
-        print("here : " + str(saved_photos))
+        #print("here : " + str(saved_photos))
         conf = tk.Toplevel()
         # Create window
         conf.wm_title("Use photo as a reference {}?".format(saved_photos))
@@ -135,7 +135,7 @@ def create_reference_faces(name, win, sw):
 
         if os.path.isfile(setup_folder_path + "/{}/{}{}".format(name,name,saved_photos)):
             saved_photos += 1
-        print("out")
+        #print("out")
     sw.refresh()
     win.destroy()
 
@@ -216,7 +216,7 @@ def get_interval(sw):
     return interval
 
 def update_settings(parent, new_interval, user_settings_file):
-    print(new_interval.get())
+    #print(new_interval.get())
     user_settings_file.writelines([new_interval.get()])
 
     conf = tk.Toplevel()
@@ -294,7 +294,7 @@ class MonitorFace(tk.Frame):
         self.time_since_last_update += 1
         if self.time_since_last_update >= update_interval:
             self.recog()
-            print("loaded faces: " + str(len(self.loaded_faces)))
+            #print("loaded faces: " + str(len(self.loaded_faces)))
             self.time_since_last_update = 0
         
     def Start(self):
@@ -341,7 +341,7 @@ class MonitorFace(tk.Frame):
         self.current_user = self.user_option.get()
         self.loaded_faces = []
         for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics/{}".format(self.user_option.get(), "*.jpg"))):
-            print("Processing file: {}".format(f))
+            #print("Processing file: {}".format(f))
             self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
 
     ##
@@ -386,7 +386,7 @@ class MonitorFace(tk.Frame):
             face_descriptor = facerec.compute_face_descriptor(img, shape)
 
         if len(dets) < 1:
-            print("There are no faces in this")
+            #print("There are no faces in this")
             self.lock()
             self.Stop()
         elif len(dets) == 1:
@@ -399,7 +399,7 @@ class MonitorFace(tk.Frame):
         if avg_distance > 0.6:
             self.lock()
             self.Stop()
-        print("distance = {}".format(distance))
+        #print("distance = {}".format(distance))
         print("average distance = {}".format(avg_distance))
 
 def main():
