@@ -238,7 +238,7 @@ def delete_user_with_prompt(parent, sw):
 
         user = sw.user_option.get()
 
-        tk.Label(conf, text="Would you like to delete the User profile {}".format(user)).pack()
+        tk.Label(conf, text="Would you like to delete the User profile {}?".format(user)).pack()
 
         tk.Button(conf, text="Confirm", command=lambda: delete_user(conf, user, sw)).pack()
         tk.Button(conf, text="Cancel", command=lambda: conf.destroy()).pack()
