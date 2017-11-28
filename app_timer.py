@@ -1,3 +1,9 @@
+##
+# app_timer.py
+#
+# Creates application that monitors face and locks the computer if something 
+# the user is not recognized
+##
 import sys
 import os
 import shutil
@@ -16,18 +22,21 @@ predictor_path = "./res/shape_predictor_68_face_landmarks.dat"
 face_rec_model_path = "./res/dlib_face_recognition_resnet_model_v1.dat"
 setup_folder_path = "./users"
 
-# Load all the models we need: a detector to find the faces, a shape predictor
-# to find face landmarks so we can precisely localize the face, and finally the
+# Load the models we need a detector to find the faces, a shape predictor
+# to find face landmarks so we can recognize the face, and the
 # face recognition model.
 detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor(predictor_path)
 facerec = dlib.face_recognition_model_v1(face_rec_model_path)
 
+#set the number of photos we require for user setup and how many are currently held
 num_reference = 5
 saved_photos = 0
 
+# Get the webcam for taking photos of the user
 cam = VideoCapture(0)   # 0 -> index of camera
 
+# Different interval values for checking user status
 interval_options = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
 
 # check for the users directory
@@ -40,6 +49,11 @@ if not users_flag:
     os.makedirs('./users')
 
 
+##
+# get_users
+#
+# Generates the list of users using the users directory
+##
 def get_users():
     user_list = os.listdir('./users')
     global user_count
@@ -48,9 +62,14 @@ def get_users():
         user_list.append('No Users Found')
     return user_list
 
+
 user_list = get_users()
 
-
+##
+# how_to
+#
+# Creates and displays the how to window of the application
+##
 def how_to():
     howto = tk.Toplevel()
     howto.wm_title("How To")
@@ -63,6 +82,12 @@ def how_to():
     how_to_text.insert(tk.END, how_to_file.read())
     how_to_text.pack()
 
+##
+# create_new_user
+#
+# Creates window with an input box for username and a box that checks the 
+# username and then begins taking reference photos
+##
 def create_new_user(root, sw):
     win = tk.Toplevel()
     win.wm_title("User Creation")
@@ -79,6 +104,12 @@ def create_new_user(root, sw):
 
     root.wait_window(win)
 
+##
+# check_username
+#
+# Checks to see if there is already a user with the given name
+# continues setup if there is not otherwise it tells the user to pick a new name
+##
 def check_username(name, win, sw, error_label, error_label_2):
     user_already_exists = False
     error_label.pack_forget()
@@ -95,6 +126,11 @@ def check_username(name, win, sw, error_label, error_label_2):
         error_label.pack_forget()
         create_reference_faces(name, win, sw)
 
+##
+# reference_img
+#
+# Takes a photo that will be used as reference for monitoring a user
+##
 def reference_img(name, index):
     face_found = False
     while not face_found:
@@ -109,7 +145,11 @@ def reference_img(name, index):
                 destroyWindow("Face-Reference-{}".format(index))
                 imwrite("./users/{}/pics/{}.jpg".format(name, index),img) #save image
 
-
+##
+# create_reference_faces
+#
+# Creates directories for a given user's name and then takes the references photos
+##
 def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}".format(name))
     shutil.copyfile('./res/default_settings.txt', './users/{}/settings.txt'.format(name))
@@ -129,7 +169,7 @@ def create_reference_faces(name, win, sw):
         tk.Button(conf, text="Confirm", command=lambda:create_map_file(conf, name, saved_photos)).pack()
         tk.Button(conf, text="Use different picture", command=lambda:new_img_prompt(conf, name, saved_photos)).pack()
         
-        use_img_prompt(name, saved_photos)
+        reference_img(name, index)
 
         win.wait_window(conf)
 
@@ -139,12 +179,19 @@ def create_reference_faces(name, win, sw):
     sw.refresh()
     win.destroy()
 
-def use_img_prompt(name, index):
-    reference_img(name, index)
-
+##
+# new_img_prompt
+#
+# Destroys the previous prompt window
+##
 def new_img_prompt(conf, name, index):
     conf.destroy()
 
+##
+# create_map_file
+#
+# Saves a file containing the landmark points of a reference photo
+##
 def create_map_file(conf, name, index):
     new_file = open("./users/{}/{}{}".format(name, name, index), 'w')
     
@@ -164,6 +211,12 @@ def create_map_file(conf, name, index):
     new_file.close()
     conf.destroy()
 
+##
+# create_user_prompt
+#
+# If user tries to start application without a user profile need to prompt user
+# to make a profile
+##
 def create_user_prompt():
     conf = tk.Toplevel()
     conf.wm_title("Must Make a User Profile")
@@ -174,6 +227,12 @@ def create_user_prompt():
     tk.Label(conf, text="No User profiles found. You must make a user profile first!").pack()
     tk.Button(conf, text="Confirm", command=conf.destroy).pack()
 
+##
+# manage_profile_settings
+#
+# Create window to allow the user to edit thier user settings, mainly the timer between 
+# 
+##
 def manage_profile_settings(sw):
     if user_count > 0:
         user = sw.user_option.get()
@@ -207,6 +266,11 @@ def manage_profile_settings(sw):
     else:
         create_user_prompt()
 
+##
+# get_interval
+#
+# Gets the user's last interval setting from their settings file
+##
 def get_interval(sw):
     user_settings_file = open('./users/{}/settings.txt'.format(sw.user_option.get()), 'r')
 
@@ -215,6 +279,12 @@ def get_interval(sw):
     user_settings_file.close()
     return interval
 
+
+##
+# update_settings
+#
+# Creates confirm window and updates the 
+##
 def update_settings(parent, new_interval, user_settings_file):
     #print(new_interval.get())
     user_settings_file.writelines([new_interval.get()])
@@ -228,6 +298,11 @@ def update_settings(parent, new_interval, user_settings_file):
     tk.Label(conf, text="Settings Updated!").pack()
     tk.Button(conf, text="Okay", command=conf.destroy).pack()
 
+##
+# delete_user_with_prompt
+#
+# User deletion window if a user can be deleted
+##
 def delete_user_with_prompt(parent, sw):
     if user_count > 0:
         conf = tk.Toplevel()
@@ -246,13 +321,28 @@ def delete_user_with_prompt(parent, sw):
     else:
         create_user_prompt()
 
+##
+# delete_user
+#
+# Deletes user
+##
 def delete_user(conf, user, sw):
     shutil.rmtree('./users/{}'.format(user))    
     conf.destroy()
     sw.refresh()
 
+##
+# Monitor Face
+#
+# Class that keeps track of a face monitoring action that is currently running
+##
 class MonitorFace(tk.Frame):
-                                                                
+           
+    ##
+    # __init__
+    #
+    # Initializer for MonitorFace class
+    ##                                                     
     def __init__(self, parent=None, **kw):        
         tk.Frame.__init__(self, parent, kw)
         self._start = 0.0        
@@ -262,10 +352,14 @@ class MonitorFace(tk.Frame):
         self.current_user = ""
         self.loaded_faces = []
         self.user_option = user_list[0]
-        self.makeWidgets()
+        self.make_widgets()
 
-
-    def makeWidgets(self):  
+	##
+    # make_widgets
+    #
+    # Places the widgets on the MonitorFace window
+    ##
+    def make_widgets(self):  
 
         self.toolbar = tk.Frame(self)                       
 
@@ -277,6 +371,11 @@ class MonitorFace(tk.Frame):
 
         self.toolbar.pack(side=tk.TOP, fill=tk.X)
 
+    ##
+    # refresh
+    #
+    # Refreshes the current windows up
+    ##
     def refresh(self):
         # Reset var and delete all old options
         self.user_option.set('')
@@ -287,6 +386,11 @@ class MonitorFace(tk.Frame):
         for user in user_list:
             self.w['menu'].add_command(label=user, command=tk._setit(self.user_option, user))
    
+   	##
+    # _update
+    #
+    # Updates the MonitorFace object and keeps track of time between user face checks
+    ##
     def _update(self): 
         update_interval = get_interval(self)
         self._elapsedtime = time.time() - self._start
@@ -296,8 +400,14 @@ class MonitorFace(tk.Frame):
             self.recog()
             #print("loaded faces: " + str(len(self.loaded_faces)))
             self.time_since_last_update = 0
-        
-    def Start(self):
+    
+    ##
+    # start
+    #
+    # Called when start button is pressed, loads the requested user's data and begins
+    # monitoring whether that user is present at each check
+    ##    
+    def start(self):
         if user_count > 0:
             if not self._running:
                 status.set("Status: Running")
@@ -310,7 +420,12 @@ class MonitorFace(tk.Frame):
         else:
             create_user_prompt()
     
-    def Stop(self):
+    ##
+    # stop
+    #
+    # Stops a face monitoring session and removes and photos that might be saved
+    ##
+    def stop(self):
         if self._running:
             status.set("Status: Inactive")
             self.after_cancel(self._timer)
@@ -319,12 +434,19 @@ class MonitorFace(tk.Frame):
             if os.path.isfile('./verify.jpg'):
                 os.remove("verify.jpg")
 
+    ##
+    # take_photo
+    #
+    # Uses the webcam to take a photo of the user
+    ##
     def take_photo(self):
         s, img = cam.read()
         if s:    # frame captured without any errors
             imwrite("verify.jpg", img) #save image    
 
     ##
+    # get_image_landmarks
+    #
     # Gets face descriptor points from a given file
     ##
     def get_image_landmarks(self, path):
@@ -336,6 +458,11 @@ class MonitorFace(tk.Frame):
         file.close()
         return otherpoints
 
+    ##
+    # load_user
+    #
+    # Loads the arrays of landmarks from the reference face files for that user
+    ##
     def load_user(self):
         file_num = 0
         self.current_user = self.user_option.get()
@@ -345,7 +472,9 @@ class MonitorFace(tk.Frame):
             self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
 
     ##
-    # Locks the Operating System
+    # lock
+    #
+    # Locks the Operating System (Windows)
     ##
     def lock(self):
         try:
@@ -354,6 +483,8 @@ class MonitorFace(tk.Frame):
             os.popen('/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend')
 
     ##
+    # calc_distance
+    #
     # Calculates the distance between two face descriptors
     ##
     def calc_distance(self, check, reference):
@@ -365,7 +496,12 @@ class MonitorFace(tk.Frame):
         return math.sqrt(sum_of_diff_sq)
 
     ##
-    # Does Facial recognition things
+    # recog
+    #
+    # Takes photo from webcam and creates a face descriptor from that picture.
+    # Depending on the numberof faces that are detected in the the photo different
+    # actions are takes such as locking the computer if shoulder surfing might be
+    # occuring
     ##
     def recog(self):
         self.take_photo()
@@ -388,20 +524,25 @@ class MonitorFace(tk.Frame):
         if len(dets) < 1:
             #print("There are no faces in this")
             self.lock()
-            self.Stop()
+            self.stop()
         elif len(dets) == 1:
             for f in self.loaded_faces:
                         distance = distance + self.calc_distance(face_descriptor, f);
         else:
             self.lock()
-            self.Stop() 
+            self.stop() 
         avg_distance = distance / num_reference
         if avg_distance > 0.6:
             self.lock()
-            self.Stop()
+            self.stop()
         #print("distance = {}".format(distance))
         print("average distance = {}".format(avg_distance))
 
+##
+# main
+#
+# Creates the main window of the program and creates the Face Monitor object
+##
 def main():
     root = tk.Tk()
     root.title("ID UR / Face (Integrated Discrete User Recognition / Face)")
@@ -412,9 +553,9 @@ def main():
     sw = MonitorFace(root)
     sw.pack()
 
-    start_button = tk.Button(root, text='Start', width=15,command=sw.Start)
+    start_button = tk.Button(root, text='Start', width=15,command=sw.start)
     start_button.pack()
-    stop_button = tk.Button(root, text='Stop', width=15, command=sw.Stop)
+    stop_button = tk.Button(root, text='Stop', width=15, command=sw.stop)
     stop_button.pack()
     create_new_user_button = tk.Button(root, text='Create New User', width=15, command=lambda: create_new_user(root, sw))
     create_new_user_button.pack()
