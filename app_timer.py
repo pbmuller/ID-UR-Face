@@ -139,7 +139,6 @@ def reference_img(name, index):
         s, img = cam.read()
         if s:
             dets = detector(img, 1)
-            #print(len(dets))
             if len(dets) == 1:
                 face_found = True
                 imshow("Face-Reference-{}".format(index),img)
@@ -158,7 +157,6 @@ def create_reference_faces(name, win, sw):
     os.makedirs("./users/{}/pics".format(name))
     saved_photos = 0
     while saved_photos < 5:
-        #print("here : " + str(saved_photos))
         conf = tk.Toplevel()
         # Create window
         conf.wm_title("Use photo as a reference {}?".format(saved_photos))
@@ -177,7 +175,7 @@ def create_reference_faces(name, win, sw):
 
         if os.path.isfile(setup_folder_path + "/{}/{}{}".format(name,name,saved_photos)):
             saved_photos += 1
-        #print("out")
+        
     sw.refresh()
     win.destroy()
 
@@ -200,8 +198,6 @@ def create_map_file(conf, name, index):
     img = imread("./users/{}/pics/{}.jpg".format(name, index))
     dets = detector(img, 1)
     for k, d in enumerate(dets):
-        print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-            k, d.left(), d.top(), d.right(), d.bottom()))
         # Get the landmarks/parts for the face in box d.
         shape = sp(img, d)
         #get face descriptor and save points to the file
@@ -288,7 +284,6 @@ def get_interval(sw):
 # Creates confirm window and updates the 
 ##
 def update_settings(parent, new_interval, user_settings_file):
-    #print(new_interval.get())
     user_settings_file.writelines([new_interval.get()])
 
     conf = tk.Toplevel()
@@ -400,7 +395,6 @@ class MonitorFace(tk.Frame):
         self.time_since_last_update += 1
         if self.time_since_last_update >= update_interval:
             self.recog()
-            #print("loaded faces: " + str(len(self.loaded_faces)))
             self.time_since_last_update = 0
     
     ##
@@ -470,7 +464,6 @@ class MonitorFace(tk.Frame):
         self.current_user = self.user_option.get()
         self.loaded_faces = []
         for f in glob.glob(os.path.join(setup_folder_path + "/{}/pics/{}".format(self.user_option.get(), "*.jpg"))):
-            #print("Processing file: {}".format(f))
             self.loaded_faces.append(self.get_image_landmarks(setup_folder_path + "/{}/{}{}".format(self.user_option.get(), self.user_option.get(), file_num)))
 
     ##
@@ -515,30 +508,28 @@ class MonitorFace(tk.Frame):
         # second argument indicates that we should upsample the image 1 time. This
         # will make everything bigger and allow us to detect more faces.
         dets = detector(img, 1)
-        print("Number of faces detected: {}".format(len(dets)))
+        
         for k, d in enumerate(dets):
-            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-                k, d.left(), d.top(), d.right(), d.bottom()))
+
             shape = sp(img, d)
 
             face_descriptor = facerec.compute_face_descriptor(img, shape)
 
-        if len(dets) < 1:
-            #print("There are no faces in this")
+        if len(dets) < 1: # No user found
             self.lock()
             self.stop()
-        elif len(dets) == 1:
+        elif len(dets) == 1: # User found
             for f in self.loaded_faces:
                         distance = distance + self.calc_distance(face_descriptor, f);
-        else:
+        else: # More than 1 person recognized, possible shoulder surfing
             self.lock()
             self.stop() 
+
         avg_distance = distance / num_reference
+
         if avg_distance > 0.6:
             self.lock()
             self.stop()
-        #print("distance = {}".format(distance))
-        print("average distance = {}".format(avg_distance))
 
 ##
 # main
