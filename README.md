@@ -5,8 +5,10 @@ All the code in the file is all our code that we wrote which uses a
 couple of libraries:
 
 Dlib: Library that can identifyfaces  in photos which helped us do landmarking
+	Found here: http://dlib.net/
 
 OpenCV: Gave us access to computer webcam and allowed us to take photos
+	Found here: https://github.com/opencv/opencv
 
 TkInter: Built-in python library that helped build the GUI
 
@@ -25,3 +27,7 @@ user_setting.py
 	had to abandon the idea to focus on other goals we thought were more important.
 	(Not sure if you wanted this but we spent time on writing it for the project so thought
 	might as well include it)
+
+Developent of the app was a lot of troubleshooting combined with reading about deep learning
+and facial recognition methods. Also problems with the libraries really slowed down the rate
+at which we could complete goals that we wanted for this project. 

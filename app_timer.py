@@ -3,6 +3,8 @@
 #
 # Creates application that monitors face and locks the computer if something 
 # the user is not recognized
+#
+# Author: Douglas Frederick & Patrick Muller
 ##
 import sys
 import os
